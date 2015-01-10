@@ -1,0 +1,15 @@
+REM   WHELLO.OPL - very small OPL program
+REM (C) 1995 PSION PLC
+
+
+
+PROC Main:
+#ifdef _WORKABOUT
+	dINITS "Hello World" /* use small dialog style for the workabout */
+#else
+	dINIT "Hello World"
+#endif
+	dTEXT "","ODE should now be running correctly"
+	DIALOG
+ENDP
+
