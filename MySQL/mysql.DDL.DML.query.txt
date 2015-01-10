@@ -1,0 +1,90 @@
+--MySQL DB to create : review
+CREATE DATABASE review;
+USE review;
+
+--give privilege to claudera for sqoop use
+grant usage on *.* to cloudera@192.168.1.68 identified by 'cloudera';
+grant all on review.* to cloudera@192.168.1.68;
+flush privileges;
+
+
+--drop tables to delete old data and structure before connecting with sqoop
+DROP TABLE word;
+
+--create table WORD with same structure than Hive because all this table is transfered to MySL for keyword research
+CREATE  TABLE review.word (
+hashkey VARCHAR(45) NOT NULL, 
+word VARCHAR(100) NULL, 
+countword INT NULL);
+
+--export from hive to mysql via sqoop before next statement
+--add the primary key
+ALTER TABLE word
+    ADD sid INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST,
+    ADD PRIMARY KEY (sid);
+
+
+--drop tables to delete old data and structure 
+DROP TABLE website;
+
+--create table website
+CREATE TABLE review.website (
+hashkey VARCHAR(45) NOT NULL,
+date_run VARCHAR(100) NOT NULL,
+url VARCHAR(200) NULL ,
+usercount INT NULL);
+
+--export from hive to mysql via sqoop before next statement
+--add the primary key
+ALTER TABLE website ADD PRIMARY KEY (hashkey);
+
+
+--drop tables to delete old data and structure 
+DROP TABLE top_theme;
+DROP TABLE top_theme_stg;
+
+--create table top_theme
+CREATE TABLE review.top_theme (
+type VARCHAR(15) NOT NULL,
+tagname VARCHAR(30) NOT NULL,
+score INT NULL);
+
+--create table top_theme_stg for the staging
+CREATE TABLE review.top_theme_stg (
+type VARCHAR(15) NOT NULL,
+tagname VARCHAR(30) NOT NULL,
+score INT NULL);
+
+
+--export from hive to mysql via sqoop before next statement
+-- to perform 3 times because 3 top 10 to query in hive
+-- warning: sqoop will append transfered rows in the staging table
+INSERT INTO top_theme (type, tagname, score)
+ SELECT type, tagname, score FROM top_theme_stg;
+
+--add the primary key
+ALTER TABLE top_theme 
+    ADD sid INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST,
+    ADD PRIMARY KEY (sid);
+
+
+
+-- find out websites by using keywords from reviews
+SELECT w.url, w.usercount, wd.word 
+FROM word wd, website w
+WHERE wd.hashkey = w.hashkey
+and (wd.word = 'civilwar' OR wd.word = 'car')
+limit 20;
+
+SELECT w.url, w.usercount, wd.word 
+FROM word wd, website w
+WHERE wd.hashkey = w.hashkey
+and (wd.word = @type_word1 OR wd.word = @type_word2);
+
+-- top 5 of the most visited website
+SELECT w.url, w.usercount 
+FROM review.website w 
+ORDER BY w.usercount DESC limit 5;
+
+-- list of theme (trend) according to wordreview, score, tag
+select * from top_theme;
