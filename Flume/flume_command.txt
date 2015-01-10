@@ -1,0 +1,6 @@
+-- flume command to connect to a web source to get an XML structure stream
+-- the flume propreties file has to be configured with a source, channel and sink
+-- this filename is : flume-website.conf
+
+-- you need to be in the flume-ng directory and type the following command
+bin/flume -ng agent -conf-file usr/lib/flume-ng/conf/flume/flume-website.conf
