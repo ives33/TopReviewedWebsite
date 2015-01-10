@@ -1,0 +1,90 @@
+Pig script for TAG
+------------------
+Input(s):
+Successfully read 58850 records (8954826 bytes) from: "/dezyre/yfproject/output/s7_review"
+
+Output(s):
+Successfully stored 58850 records (3249291 bytes) in: "/dezyre/yfproject/pig/tag"
+
+Counters:
+Total records written : 58850
+Total bytes written : 3249291
+Spillable Memory Manager spill count : 0
+Total bags proactively spilled: 0
+Total records proactively spilled: 0
+
+Job DAG:
+job_201501051940_0045
+
+
+2015-01-06 18:05:32,333 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - Success!
+grunt> 
+
+
+Pig script for WEBSITE
+----------------------
+Input(s):
+Successfully read 58850 records (8954826 bytes) from: "/dezyre/yfproject/output/s7_review"
+
+Output(s):
+Successfully stored 5885 records (457125 bytes) in: "/dezyre/yfproject/pig/website"
+
+Counters:
+Total records written : 5885
+Total bytes written : 457125
+Spillable Memory Manager spill count : 0
+Total bags proactively spilled: 0
+Total records proactively spilled: 0
+
+Job DAG:
+job_201501051940_0046
+
+
+2015-01-06 18:10:36,948 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - Success!
+grunt> 
+
+Pig script for WEBSITE
+----------------------
+Input(s):
+Successfully read 58850 records (8954826 bytes) from: "/dezyre/yfproject/output/s7_review"
+
+Output(s):
+Successfully stored 5885 records (555263 bytes) in: "/dezyre/yfproject/pig/category"
+
+Counters:
+Total records written : 5885
+Total bytes written : 555263
+Spillable Memory Manager spill count : 0
+Total bags proactively spilled: 0
+Total records proactively spilled: 0
+
+Job DAG:
+job_201501051940_0047
+
+
+2015-01-06 18:13:10,738 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - Success!
+grunt> 
+
+Pig script for WORD
+-------------------
+Input(s):
+Successfully read 618910 records (26437006 bytes) from: "/dezyre/yfproject/output/s7_word"
+
+Output(s):
+Successfully stored 618910 records (25817719 bytes) in: "/dezyre/yfproject/pig/wordreview"
+
+Counters:
+Total records written : 618910
+Total bytes written : 25817719
+Spillable Memory Manager spill count : 0
+Total bags proactively spilled: 0
+Total records proactively spilled: 0
+
+Job DAG:
+job_201501051940_0048
+
+
+2015-01-06 18:16:07,676 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - Success!
+grunt> 
+
+
