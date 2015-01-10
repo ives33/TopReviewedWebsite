@@ -1,0 +1,9 @@
+--export word table word from reviews
+sqoop export --connect jdbc:mysql://192.168.1.69/review --table word --username cloudera --password cloudera --export-dir /dezyre/yfproject/hive/wordreview
+
+--export website table website
+sqoop export --connect jdbc:mysql://192.168.1.69/review --table website --username cloudera --password cloudera --export-dir /dezyre/yfproject/hive/website
+
+--export final result TOP_THEME table (3 times in staging area)
+sqoop export --connect jdbc:mysql://192.168.1.69/review --table top_theme_stg --username cloudera --password cloudera --export-dir /dezyre/yfproject/hive/theme --input-fields-terminated-by '\001'
+
