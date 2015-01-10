@@ -1,0 +1,112 @@
+-- DDL for yfproject
+-- Create a new Hive database : review
+CREATE DATABASE review;
+
+-- create an external table WORD to move the date from Pig
+CREATE EXTERNAL TABLE review.word(hashkey string, word string, countword int)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/dezyre/yfproject/hive/wordreview';
+
+-- data loading into table WORD in HDFS
+-- by default data is appending
+LOAD DATA INPATH '/dezyre/yfproject/pig/wordreview/part-m-00000_copy_1' INTO TABLE review.word;
+
+
+-- create an external table TAG to move the date from Pig
+CREATE EXTERNAL TABLE review.tag(hashkey string, date_run string, tagname string, tagcount int)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/dezyre/yfproject/hive/tag';
+
+-- data loading into table WORD in HDFS
+-- by default data is appending
+LOAD DATA INPATH '/dezyre/yfproject/pig/tag/part-m-00000_copy_1' INTO TABLE review.tag;
+
+
+-- create an external table WEBSITE to move the date from Pig
+CREATE EXTERNAL TABLE review.website(hashkey string, date_run string, url string, usercount int)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/dezyre/yfproject/hive/website';
+
+-- data loading into table WEBSITE in HDFS
+-- by default data is appending
+LOAD DATA INPATH '/dezyre/yfproject/pig/website/part-r-00000_copy_1' INTO TABLE review.website;
+
+
+-- create an external table CATEGORY to move the date from Pig
+CREATE EXTERNAL TABLE review.category(hashkey string, category string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/dezyre/yfproject/hive/category';
+
+-- data loading into table CATEGORY in HDFS
+-- by default data is appending
+LOAD DATA INPATH '/dezyre/yfproject/pig/category/part-r-00000_copy_1' INTO TABLE review.category;
+
+
+-- SQL queries:
+-- free research on keywords to find a website
+-- need to pass a parameter to the query => full word table to export to MySQL via SQOOP (see MySQL file)
+select w.url, w.usercount, wd.word from review.word wd JOIN review.website w ON wd.hashkey = w.hashkey WHERE wd.word = 'blog' OR wd.word = 'news';
+ 
+-- top 3 of the most visited website
+select w.url, w.usercount from review.website w SORT BY w.usercount DESC limit 3;
+
+-- stats on the website review
+--how many words added, websites, average(tag)/website
+select count(wd.word) as nbword from review.word wd JOIN review.website w ON wd.hashkey = w.hashkey WHERE w.date_run='2015-01-06'; 
+select count(wd.word) as totalword from review.word wd;
+select count(w.url) as totalweb from review.website w;
+select count(t.tag) as totaltag from review.tag t;
+
+--create table TOP_THEME to insert results from top 10 queries
+CREATE EXTERNAL TABLE review.TOP_THEME(type string, tagname string, score int)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001' LINES TERMINATED BY '\n'
+LOCATION '/dezyre/yfproject/hive/theme';
+-- top 10 theme in reviewer interest based on reviewer WORD per website
+INSERT OVERWRITE DIRECTORY '/dezyre/yfproject/hive/theme' 
+select 'By wordreview' AS type, t.tagname, SUM(t.tagcount) AS topinterest from review.tag t JOIN review.word wd ON t.hashkey = wd.hashkey WHERE t.tagname=wd.word 
+GROUP BY t.tagname
+ORDER BY topinterest DESC
+limit 10;
+-- export final result with sqoop into staging table
+
+-- top 10 theme in reviewer interest based on reviewer WORD on all the websites
+--warning: more words you found used in tags higher will be the score (for example: 1 tag * 2 words = 2 times the sum, 4 identical tags * 3 words = 12 times the sum)
+INSERT OVERWRITE DIRECTORY '/dezyre/yfproject/hive/theme' 
+select 'By score' AS type, t.tagname, SUM(t.tagcount) AS score from review.tag t JOIN review.word wd ON t.tagname = wd.word   
+GROUP BY t.tagname
+ORDER BY score DESC
+limit 10;
+-- export final result with sqoop into staging table
+
+-- top 10 theme in reviewer interest based on reviewer TAG
+INSERT OVERWRITE DIRECTORY '/dezyre/yfproject/hive/theme' 
+select 'By tag' AS type, t.tagname, SUM(t.tagcount) AS topinterest from review.tag t
+GROUP BY t.tagname
+ORDER BY topinterest DESC
+limit 10;
+-- export final result with sqoop into staging table
+
+
+-- top 3 of the day, week, month
+SELECT w.url, w.usercount, w.date_run
+FROM review.website w
+WHERE w.date_run = '2015-01-06'
+ORDER BY w.usercount DESC
+limit 3;
+
+SELECT w.url, w.usercount, w.date_run
+FROM review.website w
+WHERE (w.date_run >= '2015-01-05' and w.date_run < '2015-01-12')
+ORDER BY w.usercount DESC
+limit 3;
+
+SELECT w.url, w.usercount, w.date_run
+FROM review.website w
+WHERE (w.date_run >= '2015-01-01' and w.date_run < '2015-02-01')
+ORDER BY w.usercount DESC
+limit 3;
+
