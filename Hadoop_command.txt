@@ -1,0 +1,8 @@
+-- copy file social-odp-2k9-annotations.xml from local to HDFS
+hadoop fs -put /home/cloudera/dezyre/yfproject/input/social-odp-2k9_annotations.xml /dezyre/yfproject/input/social-odp-2k9_annotations.xml
+
+-- run MapReduce program : ImportReview 
+hadoop jar importreview-1.0.jar yf.project.ImportReview /dezyre/yfproject/input/social-odp-2k9_annotations.xml /dezyre/yfproject/output/s7_review 
+
+-- run MapReduce program : WordcountXML 
+hadoop jar importreview-1.0.jar yf.project.WordCountXML /dezyre/yfproject/input/social-odp-2k9_annotations.xml /dezyre/yfproject/output/s7_word 
