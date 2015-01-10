@@ -1,0 +1,54 @@
+-- command to delete the HDFS directories before running Pig script
+hadoop fs -rmr /dezyre/yfproject/pig/category
+hadoop fs -rmr /dezyre/yfproject/pig/tag
+hadoop fs -rmr /dezyre/yfproject/pig/website
+hadoop fs -rmr /dezyre/yfproject/pig/wordreview
+
+
+-- PIG script
+-- Load MapReduce output file in HDFS : review
+-- by default PigStorage loads all files with format: PART-nnnnn
+data_review = LOAD '/dezyre/yfproject/output/s7_review/' USING PigStorage(',') AS (tagname:chararray, tagcount:int, hashkey:chararray, url:chararray, usercount:int, category:chararray, date:chararray);
+
+-- Filter on tag only with processing date
+data_tag = FOREACH data_review GENERATE hashkey, date, TRIM(tagname), tagcount; 
+
+-- Store data in HDFS for Hive usage : TAG.csv
+STORE data_tag INTO '/dezyre/yfproject/pig/tag' USING PigStorage(',');
+
+
+-- Reuse of data-review relation to create the next HDFS file like website.csv
+-- Filter on website information only and add processing date
+data_review_filtered = FOREACH data_review GENERATE hashkey, date, url, usercount;
+
+-- Eliminate double records because the file structure record is doubled for each tagname
+distinct_website = DISTINCT data_review_filtered;
+
+-- Store data in HDFS for Hive usage : WEBSITE.csv
+STORE distinct_website INTO '/dezyre/yfproject/pig/website' USING PigStorage(',');
+
+
+-- Reuse of data-review relation to create the next HDFS file like CATEGORY.csv
+-- tokenize category generates a 1045 error: TOKENIZE(category,'/') AS cat:chararray (no forum mentioned it)
+-- the split will be done in Hive with SerDe interface
+
+--split category list into word (tokenize with the key)
+cat = FOREACH data_review GENERATE hashkey, category;
+
+-- Eliminate double records because the file structure record is doubled for each tagname with the same category
+distinct_category = DISTINCT cat;
+
+-- Store data in HDFS for Hive usage : CATEGORY.csv
+STORE distinct_category INTO '/dezyre/yfproject/pig/category' USING PigStorage(',');
+
+
+
+-- Load MapReduce output file in HDFS like WORDREVIEW
+data_word = LOAD '/dezyre/yfproject/output/s7_word/' USING PigStorage(',') AS (hashkey:chararray, word:chararray, nbword:int);
+
+-- structure data and add processing date
+data_final = FOREACH data_word GENERATE TRIM(hashkey), word, nbword; 
+
+-- Store data in HDFS for Hive usage : WORDREVIEW.csv
+STORE data_final INTO '/dezyre/yfproject/pig/wordreview' USING PigStorage(',');
+
